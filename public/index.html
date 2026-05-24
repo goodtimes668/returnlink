@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0F1F1A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ReturnLink">
+<title>ReturnLink</title>
+
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E6;
+    --cream-soft: #FAF7F2;
+    --ink: #0F1F1A;
+    --ink-soft: #2A3A33;
+    --forest: #1F4D3A;
+    --forest-deep: #143527;
+    --sage: #8AAB8E;
+    --sage-soft: #D8E3D3;
+    --terra: #C75B3F;
+    --terra-soft: #F4D9CC;
+    --amber: #D4923A;
+    --muted: #6B7770;
+    --line: #E0DAC9;
+    --line-soft: #ECE6D5;
+    --error: #B83A2A;
+    --success: #2D6B47;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: #2A3A33;
+    color: var(--ink);
+    font-family: 'Manrope', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    background: radial-gradient(ellipse at top, #3a4e44 0%, #1a2520 60%);
+  }
+  .device {
+    width: 100%;
+    max-width: 400px;
+    height: 820px;
+    background: var(--cream-soft);
+    border-radius: 48px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.5), 0 0 0 10px #0a0a0a, 0 0 0 12px #2a2a2a;
+    display: flex;
+    flex-direction: column;
+  }
+  @media (max-width: 480px) {
+    body { padding: 0; background: var(--cream-soft); }
+    .device { max-width: 100%; height: 100vh; height: 100dvh; border-radius: 0; box-shadow: none; }
+  }
+  .statusbar {
+    background: var(--cream-soft);
+    padding: 14px 28px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .statusbar .icons { display: flex; gap: 6px; align-items: center; }
+  .header {
+    padding: 8px 24px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .brand { display: flex; align-items: baseline; gap: 6px; }
+  .brand-mark {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--forest);
+    letter-spacing: -0.02em;
+    font-variation-settings: "opsz" 144;
+  }
+  .brand-mark span { color: var(--terra); font-style: italic; }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .header-action {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .conn-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .conn-pill.online { background: var(--sage-soft); color: var(--forest-deep); border-color: #C2D4BC; }
+  .conn-pill.offline { background: #fce4d6; color: #8a3a1c; border-color: #f0c4a8; }
+  .conn-pill .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: currentColor;
+  }
+  .conn-pill.online .dot { animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+  }
+  .screen {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 22px 24px;
+    scroll-behavior: smooth;
+  }
+  .screen::-webkit-scrollbar { display: none; }
+  .screen { scrollbar-width: none; }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .screen > * { animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+  .screen > *:nth-child(1) { animation-delay: 0.02s; }
+  .screen > *:nth-child(2) { animation-delay: 0.08s; }
+  .screen > *:nth-child(3) { animation-delay: 0.14s; }
+  .screen > *:nth-child(4) { animation-delay: 0.20s; }
+  .screen > *:nth-child(5) { animation-delay: 0.26s; }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .display {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 32px;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    font-variation-settings: "opsz" 144;
+  }
+  .display em { font-style: italic; color: var(--forest); font-weight: 500; }
+  .h-section { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; color: var(--ink); }
+  .body-text { font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
+  .meta { font-size: 12px; color: var(--muted); letter-spacing: 0.01em; }
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; }
+  .hero { padding: 4px 0 24px; }
+  .hero .eyebrow { margin-bottom: 8px; }
+  .card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+  }
+  .card-elevated {
+    background: var(--ink);
+    color: var(--cream-soft);
+    border: none;
+    box-shadow: 0 8px 24px -8px rgba(15,31,26,0.4);
+  }
+  .card-elevated .meta { color: rgba(245,240,230,0.6); }
+  .card-elevated .body-text { color: rgba(245,240,230,0.85); }
+  .card-forest { background: var(--sage-soft); border: 1px solid #C2D4BC; }
+  .card-ai {
+    background: linear-gradient(135deg, #F4D9CC 0%, #f0e8d8 100%);
+    border: 1px solid #E8C4B3;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-ai::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(199,91,63,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  .stat { padding: 12px 14px; background: rgba(245,240,230,0.08); border-radius: 14px; }
+  .card:not(.card-elevated) .stat { background: var(--cream); border: 1px solid var(--line-soft); }
+  .stat-value {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .card-elevated .stat-value { color: var(--cream-soft); }
+  .card-elevated .stat-value.accent { color: #E8A876; }
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .card-elevated .stat-label { color: rgba(245,240,230,0.5); }
+  .return-item {
+    background: var(--cream);
+    border: 1px solid var(--line-soft);
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 12px;
+  }
+  .return-item-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .return-item-title { font-weight: 700; font-size: 14px; color: var(--ink); line-height: 1.3; }
+  .return-item-meta { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+  .compare {
+    background: white;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 10px 0;
+    border: 1px solid var(--line-soft);
+  }
+  .compare-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 13px; }
+  .compare-row + .compare-row { border-top: 1px dashed var(--line-soft); }
+  .compare-label { color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .compare-value { font-weight: 600; color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+  .compare-value.win { color: var(--success); }
+  .compare-value.loss { color: var(--muted); text-decoration: line-through; }
+  .btn {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 100px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s ease, opacity 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: -0.01em;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.6; cursor: wait; transform: none; }
+  .btn-primary { background: var(--forest); color: var(--cream-soft); }
+  .btn-primary:hover:not(:disabled) { background: var(--forest-deep); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+  }
+  .btn-cream { background: var(--cream); color: var(--ink); border: 1px solid var(--line); }
+  .btn-row { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 100px;
+    background: var(--terra);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .qr-card {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    margin: 4px 0 14px;
+  }
+  .qr-code { width: 180px; height: 180px; margin: 8px auto 14px; background: white; padding: 12px; border-radius: 12px; }
+  .qr-code svg { width: 100%; height: 100%; }
+  .qr-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+    letter-spacing: 0.1em;
+  }
+  .qr-help { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .location {
+    background: var(--cream);
+    border: 1px solid var(--line-soft);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+  .location:active { border-color: var(--forest); }
+  .location.selected { border-color: var(--forest); background: var(--sage-soft); }
+  .location-icon {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    background: var(--forest);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--cream-soft);
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  .location-info { flex: 1; min-width: 0; }
+  .location-name { font-weight: 700; font-size: 14px; color: var(--ink); line-height: 1.2; }
+  .location-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .location-dist {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--forest);
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .pill-forest { background: var(--sage-soft); color: var(--forest-deep); }
+  .pill-warm { background: var(--terra-soft); color: var(--terra); }
+  .pill-cream { background: var(--cream); color: var(--ink-soft); border: 1px solid var(--line); }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .activity { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; }
+  .activity + .activity { border-top: 1px solid var(--line-soft); }
+  .activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--forest); margin-top: 6px; flex-shrink: 0; }
+  .activity-content { flex: 1; }
+  .activity-title { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .activity-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: var(--cream);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--ink);
+    margin: 8px 0;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  .input:focus { border-color: var(--forest); background: white; }
+  .input::placeholder { color: var(--muted); letter-spacing: 0.05em; }
+  .empty {
+    text-align: center;
+    padding: 24px 12px;
+    color: var(--muted);
+    font-size: 13px;
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+  }
+  .navbar {
+    background: var(--cream-soft);
+    border-top: 1px solid var(--line);
+    padding: 8px 8px calc(env(safe-area-inset-bottom, 0px) + 12px);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+  .nav-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    border-radius: 12px;
+    transition: color 0.2s ease;
+  }
+  .nav-tab .ico { font-size: 18px; transition: transform 0.2s ease; }
+  .nav-tab.active { color: var(--forest); }
+  .nav-tab.active .ico { transform: scale(1.1); }
+  .toast-wrap {
+    position: absolute;
+    bottom: 88px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 340px;
+    width: calc(100% - 40px);
+    z-index: 100;
+    pointer-events: none;
+  }
+  .toast {
+    background: var(--ink);
+    color: var(--cream-soft);
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    box-shadow: 0 10px 30px -8px rgba(0,0,0,0.4);
+    animation: toastIn 0.3s cubic-bezier(0.22,1,0.36,1);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .toast .toast-icon {
+    width: 20px; height: 20px; flex-shrink: 0;
+    background: var(--sage);
+    border-radius: 50%;
+    color: var(--forest-deep);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    margin-top: 1px;
+  }
+  .toast.error .toast-icon { background: #f0c4a8; color: #8a3a1c; }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+  .modal-bg {
+    position: absolute;
+    inset: 0;
+    background: rgba(15,31,26,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal {
+    background: var(--cream-soft);
+    border-radius: 28px 28px 0 0;
+    padding: 24px 24px 32px;
+    width: 100%;
+    animation: slideUp 0.3s cubic-bezier(0.22,1,0.36,1);
+  }
+  .modal-handle { width: 40px; height: 4px; background: var(--line); border-radius: 4px; margin: -8px auto 16px; }
+  .timeline { margin-top: 16px; padding-left: 4px; }
+  .timeline-item { position: relative; padding-left: 24px; padding-bottom: 16px; }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-item::before {
+    content: ''; position: absolute; left: 5px; top: 6px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--line);
+  }
+  .timeline-item.done::before { background: var(--forest); }
+  .timeline-item.current::before {
+    background: var(--terra);
+    box-shadow: 0 0 0 4px var(--terra-soft);
+  }
+  .timeline-item::after {
+    content: ''; position: absolute; left: 8.5px; top: 16px;
+    width: 1px; bottom: 0; background: var(--line);
+  }
+  .timeline-item:last-child::after { display: none; }
+  .timeline-title { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .timeline-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .timeline-item:not(.done):not(.current) .timeline-title { color: var(--muted); font-weight: 500; }
+  .skel {
+    background: linear-gradient(90deg, var(--cream) 0%, var(--line-soft) 50%, var(--cream) 100%);
+    background-size: 200% 100%;
+    animation: skel 1.4s ease-in-out infinite;
+    border-radius: 8px;
+  }
+  @keyframes skel {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="icons">
+      <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx="0.5"/><rect x="4" y="4" width="3" height="7" rx="0.5"/><rect x="8" y="2" width="3" height="9" rx="0.5"/><rect x="12" y="0" width="3" height="11" rx="0.5"/></svg>
+      <svg width="22" height="11" viewBox="0 0 22 11" fill="none"><rect x="0.5" y="0.5" width="18" height="10" rx="2.5" stroke="currentColor" opacity="0.5"/><rect x="2" y="2" width="15" height="7" rx="1.5" fill="currentColor"/><rect x="19.5" y="3.5" width="1.5" height="4" rx="0.5" fill="currentColor" opacity="0.5"/></svg>
+    </span>
+  </div>
+
+  <div class="header">
+    <div class="brand">
+      <div class="brand-mark">return<span>·</span>link</div>
+    </div>
+    <div class="header-actions">
+      <span class="conn-pill" id="connPill"><span class="dot"></span>connecting</span>
+      <button class="header-action" id="resetBtn" title="Reset demo data">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="appScreen" class="screen"></div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <div class="navbar">
+    <button class="nav-tab active" data-role="seller">
+      <span class="ico">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      </span>
+      Seller
+    </button>
+    <button class="nav-tab" data-role="customer">
+      <span class="ico">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      </span>
+      Customer
+    </button>
+    <button class="nav-tab" data-role="partner">
+      <span class="ico">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </span>
+      Partner
+    </button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ============================================================
+//   CONFIG — set these via build env or edit directly
+// ============================================================
+// Backend API base. Leave empty string to run frontend-only (localStorage mode).
+// In production set this to your Railway URL, e.g. "https://returnlink-api.up.railway.app"
+const CONFIG = {
+  API_BASE: (window.__RETURNLINK_API__ || '').replace(/\/$/, ''),
+  AI_FUNCTION_URL: '/.netlify/functions/ai-match',
+  POLL_INTERVAL: 0 // set to e.g. 5000 if you want auto-refresh
+};
+
+const STATE_KEY = 'returnlink_state_v2';
+const ROLE_KEY = 'returnlink_role_v2';
+
+// ============================================================
+//   SEED — used as offline fallback and first-run default
+// ============================================================
+const SEED = () => ({
+  returns: [
+    {
+      id: 'RET-72A3F', orderId: 'ORD-1001',
+      product: 'Wool sweater · beige · M',
+      productPrice: 89.99,
+      customer: 'alex@example.com', customerName: 'Alex Chen',
+      shipReturnCost: 12.50, aiMatchCost: 2.90, partnerCredit: 5.85,
+      status: 'pending_seller', method: null, partnerId: null, aiReasoning: null,
+      createdAt: Date.now() - 1000 * 60 * 60 * 4,
+      events: [{ label: 'Return requested', at: Date.now() - 1000 * 60 * 60 * 4, done: true }]
+    },
+    {
+      id: 'RET-991B2', orderId: 'ORD-0987',
+      product: 'Ceramic mug set · 4pc',
+      productPrice: 48.00,
+      customer: 'jamie@example.com', customerName: 'Jamie K.',
+      shipReturnCost: 8.75, aiMatchCost: 2.40, partnerCredit: 3.75,
+      status: 'awaiting_dropoff', method: 'ai_match', partnerId: 'P1',
+      aiReasoning: 'Local thrift can take ceramics — quick credit + a second life for the set.',
+      createdAt: Date.now() - 1000 * 60 * 60 * 26,
+      events: [
+        { label: 'Return requested', at: Date.now() - 1000 * 60 * 60 * 26, done: true },
+        { label: 'Local match approved', at: Date.now() - 1000 * 60 * 60 * 24, done: true },
+        { label: 'QR code sent to customer', at: Date.now() - 1000 * 60 * 60 * 23, done: true }
+      ]
+    }
+  ],
+  partners: [
+    { id: 'P1', name: 'Maple Street Dry Cleaners', short: 'M', address: '245 Maple Ave', distance: '0.2 mi', hours: 'Open · closes 7pm', earningsWeek: 42.50, specialty: 'dry cleaner — best for garments, textiles, linens' },
+    { id: 'P2', name: 'GreenCycle Thrift', short: 'G', address: '890 Elm St', distance: '0.4 mi', hours: 'Open · closes 8pm', earningsWeek: 0, specialty: 'thrift — best for resellable housewares, decor, ceramics, books' },
+    { id: 'P3', name: 'Corner Mailbox + Co.', short: 'C', address: '12 Oak Blvd', distance: '0.6 mi', hours: 'Open 24/7', earningsWeek: 0, specialty: 'mail/shipping — catch-all for electronics or anything fragile' }
+  ],
+  acceptedAtPartner: [
+    { code: 'RL-991B2', product: 'Mug set', credit: 3.75, at: Date.now() - 1000 * 60 * 60 * 12 },
+    { code: 'RL-44C12', product: 'Linen napkins', credit: 4.20, at: Date.now() - 1000 * 60 * 60 * 36 },
+    { code: 'RL-2811A', product: 'Glass tumbler', credit: 2.95, at: Date.now() - 1000 * 60 * 60 * 60 }
+  ],
+  sellerStats: { savedThisMonth: 87.20, returnsThisMonth: 4, pendingPayout: 134.20 }
+});
+
+// ============================================================
+//   APP STATE
+// ============================================================
+let state = null;
+let currentRole = 'seller';
+let toastQueue = [];
+let modal = null;
+let connectionMode = 'connecting'; // 'online' | 'offline' | 'connecting' | 'local'
+let busyReturns = new Set(); // returns currently being mutated
+
+// ============================================================
+//   UTILITIES
+// ============================================================
+const $ = (s, ctx = document) => ctx.querySelector(s);
+const $$ = (s, ctx = document) => Array.from(ctx.querySelectorAll(s));
+
+const fmtMoney = (n) => '$' + Number(n).toFixed(2);
+
+function timeAgo(ms) {
+  const diff = Date.now() - ms;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, m => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[m]));
+}
+
+function qrSvg(code) {
+  const size = 21;
+  const cells = [];
+  let h = 0;
+  for (let i = 0; i < code.length; i++) h = ((h << 5) - h + code.charCodeAt(i)) | 0;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      h = ((h * 9301 + 49297) % 233280);
+      cells.push({ x, y, fill: h / 233280 > 0.52 });
+    }
+  }
+  function setBlock(ox, oy) {
+    for (let y = 0; y < 7; y++) for (let x = 0; x < 7; x++) {
+      const idx = (oy + y) * size + (ox + x);
+      if (!cells[idx]) continue;
+      const border = x === 0 || y === 0 || x === 6 || y === 6;
+      const inner = x >= 2 && x <= 4 && y >= 2 && y <= 4;
+      cells[idx].fill = border || inner;
+    }
+  }
+  setBlock(0, 0); setBlock(size - 7, 0); setBlock(0, size - 7);
+  const scale = 8;
+  let rects = '';
+  cells.forEach(c => {
+    if (c.fill) rects += `<rect x="${c.x * scale}" y="${c.y * scale}" width="${scale}" height="${scale}"/>`;
+  });
+  return `<svg viewBox="0 0 ${size * scale} ${size * scale}" xmlns="http://www.w3.org/2000/svg" fill="#0F1F1A">${rects}</svg>`;
+}
+
+// ============================================================
+//   PERSISTENCE
+// ============================================================
+function saveLocal() {
+  try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return SEED();
+}
+
+// ============================================================
+//   API LAYER — backend with localStorage fallback
+// ============================================================
+async function api(path, options = {}) {
+  if (!CONFIG.API_BASE) throw new Error('no_api_base');
+  const res = await fetch(CONFIG.API_BASE + path, {
+    ...options,
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
+  });
+  if (!res.ok) {
+    const err = new Error(`api_${res.status}`);
+    err.status = res.status;
+    try { err.body = await res.json(); } catch (e) {}
+    throw err;
+  }
+  return res.json();
+}
+
+async function syncFromServer() {
+  if (!CONFIG.API_BASE) {
+    state = loadLocal();
+    setConnection('local');
+    return;
+  }
+  try {
+    state = await api('/api/state');
+    saveLocal();
+    setConnection('online');
+  } catch (err) {
+    console.warn('Backend unreachable, using local cache:', err.message);
+    state = loadLocal();
+    setConnection('offline');
+  }
+}
+
+// ============================================================
+//   CONNECTION UI
+// ============================================================
+function setConnection(mode) {
+  connectionMode = mode;
+  const pill = $('#connPill');
+  if (!pill) return;
+  pill.className = 'conn-pill';
+  if (mode === 'online') {
+    pill.classList.add('online');
+    pill.innerHTML = '<span class="dot"></span>live';
+  } else if (mode === 'offline') {
+    pill.classList.add('offline');
+    pill.innerHTML = '<span class="dot"></span>offline';
+  } else if (mode === 'local') {
+    pill.innerHTML = '<span class="dot"></span>local';
+  } else {
+    pill.innerHTML = '<span class="dot"></span>connecting';
+  }
+}
+
+// ============================================================
+//   TOAST
+// ============================================================
+function toast(msg, opts = {}) {
+  toastQueue.push({ msg, error: !!opts.error });
+  renderToasts();
+}
+
+function renderToasts() {
+  const wrap = $('#toastWrap');
+  if (!wrap) return;
+  if (toastQueue.length === 0) { wrap.innerHTML = ''; return; }
+  const { msg, error } = toastQueue[0];
+  wrap.innerHTML = `<div class="toast ${error ? 'error' : ''}"><div class="toast-icon">${error ? '!' : '✓'}</div><div>${escapeHtml(msg)}</div></div>`;
+  setTimeout(() => { toastQueue.shift(); renderToasts(); }, 2400);
+}
+
+// ============================================================
+//   MODAL
+// ============================================================
+function openModal(html) { modal = html; renderModal(); }
+function closeModal() { modal = null; renderModal(); }
+function renderModal() {
+  const existing = $('.modal-bg');
+  if (existing) existing.remove();
+  if (!modal) return;
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal"><div class="modal-handle"></div>${modal}</div>`;
+  bg.addEventListener('click', e => { if (e.target === bg) closeModal(); });
+  $('.device').appendChild(bg);
+  $$('.modal-close', bg).forEach(b => b.addEventListener('click', closeModal));
+}
+
+// ============================================================
+//   AI MATCH — call the Netlify function
+// ============================================================
+async function getAiMatch(product, partners) {
+  try {
+    const res = await fetch(CONFIG.AI_FUNCTION_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product, partners })
+    });
+    const data = await res.json();
+    // Function returns either a direct match or { fallback: {...} } on errors
+    if (data.partner_id) return data;
+    if (data.fallback && data.fallback.partner_id) return data.fallback;
+    throw new Error('no_partner_id_in_response');
+  } catch (err) {
+    console.warn('AI match failed, using local heuristic:', err.message);
+    return localHeuristicMatch(product, partners);
+  }
+}
+
+function localHeuristicMatch(product, partners) {
+  const p = String(product).toLowerCase();
+  let preferred = 'P3';
+  if (/sweater|shirt|pants|jeans|jacket|dress|coat|linen|fabric|cloth|wool|cotton|silk/.test(p)) preferred = 'P1';
+  else if (/mug|ceramic|book|plate|bowl|vase|decor|frame|candle|kitchen/.test(p)) preferred = 'P2';
+  const chosen = partners.find(x => x.id === preferred) || partners[0];
+  return {
+    partner_id: chosen.id,
+    reasoning: 'Routed by product category — your nearest qualified partner.',
+    estimated_credit_back: 3.50,
+    source: 'fallback_local'
+  };
+}
+
+// ============================================================
+//   RENDER — Seller
+// ============================================================
+function renderSeller() {
+  const pending = state.returns.filter(r => r.status === 'pending_seller');
+  const active = state.returns.filter(r => r.status === 'awaiting_dropoff' || r.status === 'dropped_off');
+
+  return `
+    <div class="hero">
+      <div class="eyebrow">Seller dashboard</div>
+      <div class="display">Returns,<br><em>handled smarter.</em></div>
+    </div>
+
+    <div class="card card-elevated">
+      <div class="eyebrow" style="color:rgba(245,240,230,0.55)">This month</div>
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-value accent">${fmtMoney(state.sellerStats.savedThisMonth)}</div>
+          <div class="stat-label">Saved on shipping</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">${state.sellerStats.returnsThisMonth}</div>
+          <div class="stat-label">Returns routed</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+        <div class="h-section">Pending decisions</div>
+        ${pending.length ? `<span class="pill pill-warm"><span class="dot"></span>${pending.length} new</span>` : ''}
+      </div>
+      ${pending.length === 0 ? `<div class="empty">All caught up. ✨</div>` : pending.map(r => {
+        const isBusy = busyReturns.has(r.id);
+        return `
+          <div class="return-item">
+            <div class="return-item-head">
+              <div>
+                <div class="return-item-title">${escapeHtml(r.product)}</div>
+                <div class="return-item-meta">${r.id} · ${escapeHtml(r.customerName)} · ${timeAgo(r.createdAt)}</div>
+              </div>
+              <div class="pill pill-cream">${fmtMoney(r.productPrice)}</div>
+            </div>
+            <div class="compare">
+              <div class="compare-row">
+                <span class="compare-label">↑ Ship back to warehouse</span>
+                <span class="compare-value loss">${fmtMoney(r.shipReturnCost)}</span>
+              </div>
+              <div class="compare-row">
+                <span class="compare-label">◆ Local AI match</span>
+                <span class="compare-value win">${fmtMoney(r.aiMatchCost)}</span>
+              </div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary" data-action="approve-ai" data-id="${r.id}" ${isBusy ? 'disabled' : ''}>
+                ${isBusy ? '<span class="spinner"></span> Matching with AI…' : `<span class="ai-badge">AI</span> Approve match — save ${fmtMoney(r.shipReturnCost - r.aiMatchCost)}`}
+              </button>
+              <button class="btn btn-ghost" data-action="approve-ship" data-id="${r.id}" ${isBusy ? 'disabled' : ''}>
+                Standard return shipping
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    ${active.length ? `
+      <div class="card">
+        <div class="h-section" style="margin-bottom:10px;">In progress</div>
+        ${active.map(r => {
+          const partner = state.partners.find(p => p.id === r.partnerId);
+          return `
+            <div class="return-item">
+              <div class="return-item-head">
+                <div>
+                  <div class="return-item-title">${escapeHtml(r.product)}</div>
+                  <div class="return-item-meta">${r.id} · ${partner ? escapeHtml(partner.name) : 'awaiting partner'}</div>
+                </div>
+                <span class="pill ${r.status === 'dropped_off' ? 'pill-forest' : 'pill-warm'}">
+                  <span class="dot"></span>
+                  ${r.status === 'dropped_off' ? 'dropped off' : 'awaiting drop-off'}
+                </span>
+              </div>
+              ${r.aiReasoning ? `
+                <div style="font-size:12px; color:var(--ink-soft); font-style:italic; padding:8px 12px; background:white; border-radius:10px; border-left:3px solid var(--terra); margin-top:6px;">
+                  <span class="ai-badge" style="margin-right:6px;">AI</span>${escapeHtml(r.aiReasoning)}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : ''}
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+        <div class="h-section">Pending payout</div>
+        <div style="font-family:'Fraunces',serif; font-weight:600; font-size:22px; color:var(--forest);">${fmtMoney(state.sellerStats.pendingPayout)}</div>
+      </div>
+      <div class="meta" style="margin-top:4px;">Settles every Friday · next: in 3 days</div>
+      <button class="btn btn-cream" style="margin-top:14px;" data-action="view-payouts">View payout history</button>
+    </div>
+  `;
+}
+
+// ============================================================
+//   RENDER — Customer
+// ============================================================
+function renderCustomer() {
+  const active = state.returns.find(r => r.status === 'awaiting_dropoff' || r.status === 'pending_seller');
+
+  if (!active) {
+    return `
+      <div class="hero">
+        <div class="eyebrow">Your returns</div>
+        <div class="display">Nothing<br><em>to return.</em></div>
+      </div>
+      <div class="card">
+        <div class="body-text">No active returns. Items from your recent orders will appear here when you start a return.</div>
+      </div>
+    `;
+  }
+
+  if (active.status === 'pending_seller') {
+    return `
+      <div class="hero">
+        <div class="eyebrow">Your return</div>
+        <div class="display">Awaiting<br><em>seller approval.</em></div>
+      </div>
+      <div class="card">
+        <div class="return-item-head">
+          <div>
+            <div class="return-item-title">${escapeHtml(active.product)}</div>
+            <div class="return-item-meta">${active.id} · requested ${timeAgo(active.createdAt)}</div>
+          </div>
+          <span class="pill pill-warm"><span class="dot"></span>pending</span>
+        </div>
+        <div class="body-text" style="margin-top:14px;">
+          The seller is reviewing your return. You'll get a QR code as soon as they approve.
+        </div>
+      </div>
+      <div class="card card-forest">
+        <div class="h-section">💡 Pro tip</div>
+        <div class="body-text" style="margin-top:6px;">
+          Approving the local-drop option means your refund processes in 24h instead of 5-7 days.
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="hero">
+      <div class="eyebrow">Drop-off ready</div>
+      <div class="display">Show this<br>at the <em>counter.</em></div>
+    </div>
+
+    <div class="qr-card">
+      <div class="qr-code">${qrSvg(active.id)}</div>
+      <div class="qr-label">${active.id.replace('RET-', 'RL-')}</div>
+      <div class="qr-help">${escapeHtml(active.product)}</div>
+    </div>
+
+    ${active.aiReasoning ? `
+      <div class="card card-ai">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+          <span class="ai-badge">AI</span>
+          <div class="h-section">Why this partner?</div>
+        </div>
+        <div class="body-text" style="font-style:italic; position:relative; z-index:1;">
+          ${escapeHtml(active.aiReasoning)}
+        </div>
+      </div>
+    ` : ''}
+
+    <div class="card">
+      <div class="h-section" style="margin-bottom:10px;">Drop-off locations</div>
+      ${state.partners.map(p => `
+        <div class="location ${p.id === active.partnerId ? 'selected' : ''}" data-action="select-partner" data-id="${p.id}" data-return="${active.id}">
+          <div class="location-icon">${p.short}</div>
+          <div class="location-info">
+            <div class="location-name">${escapeHtml(p.name)}</div>
+            <div class="location-meta">${escapeHtml(p.address)} · ${escapeHtml(p.hours)}</div>
+          </div>
+          <div class="location-dist">${p.distance}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="card">
+      <div class="h-section" style="margin-bottom:6px;">Status</div>
+      <div class="timeline">
+        ${active.events.map((e) => `
+          <div class="timeline-item ${e.done ? 'done' : ''}">
+            <div class="timeline-title">${escapeHtml(e.label)}</div>
+            <div class="timeline-meta">${timeAgo(e.at)}</div>
+          </div>
+        `).join('')}
+        <div class="timeline-item current">
+          <div class="timeline-title">Drop off at partner</div>
+          <div class="timeline-meta">show QR code at the counter</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-title">Refund issued</div>
+          <div class="timeline-meta">within 24h after drop-off</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 8px;">
+      <button class="btn btn-ghost" data-action="customer-skip" data-id="${active.id}" style="font-size:13px;">
+        Can't go in person — ship instead
+      </button>
+    </div>
+  `;
+}
+
+// ============================================================
+//   RENDER — Partner
+// ============================================================
+function renderPartner() {
+  const myPartner = state.partners[0];
+  const incoming = state.returns.filter(r => r.partnerId === myPartner.id && r.status === 'awaiting_dropoff');
+
+  return `
+    <div class="hero">
+      <div class="eyebrow">Partner dashboard</div>
+      <div class="display">${escapeHtml(myPartner.name.split(' ')[0])},<br><em>open for drop-offs.</em></div>
+    </div>
+
+    <div class="card card-elevated">
+      <div class="eyebrow" style="color:rgba(245,240,230,0.55)">This week</div>
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-value accent">${fmtMoney(myPartner.earningsWeek)}</div>
+          <div class="stat-label">Earnings</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">${state.acceptedAtPartner.length}</div>
+          <div class="stat-label">Items accepted</div>
+        </div>
+      </div>
+      <div class="meta" style="margin-top:14px; color:rgba(245,240,230,0.55);">
+        $0.50 per drop-off + resale share on accepted items
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="h-section" style="margin-bottom:4px;">Scan return code</div>
+      <div class="meta" style="margin-bottom:10px;">Enter the code on the customer's QR card</div>
+      <input class="input" id="scanInput" placeholder="RL-XXXXX" maxlength="10" autocomplete="off">
+      <button class="btn btn-primary" data-action="process-scan" style="margin-top:8px;">
+        Process drop-off
+      </button>
+      ${incoming.length ? `
+        <div class="meta" style="margin-top:14px; padding-top:14px; border-top:1px dashed var(--line-soft);">
+          <strong style="color:var(--ink);">Expected today:</strong>
+          ${incoming.map(r => `<div style="margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--ink-soft);">${r.id.replace('RET-', 'RL-')} · ${escapeHtml(r.product)}</div>`).join('')}
+        </div>
+      ` : ''}
+    </div>
+
+    <div class="card">
+      <div class="h-section" style="margin-bottom:10px;">Recent accepted</div>
+      ${state.acceptedAtPartner.length === 0 ? `<div class="empty">No drop-offs yet.</div>` : state.acceptedAtPartner.slice(0, 6).map(a => `
+        <div class="activity">
+          <div class="activity-dot"></div>
+          <div class="activity-content">
+            <div class="activity-title">${escapeHtml(a.product)} <span class="mono" style="color:var(--muted); font-weight:500;">${a.code}</span></div>
+            <div class="activity-meta">${timeAgo(a.at)} · +${fmtMoney(a.credit)} earned</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ============================================================
+//   MAIN RENDER
+// ============================================================
+function render() {
+  const screen = $('#appScreen');
+  if (!screen) return;
+  if (!state) {
+    screen.innerHTML = `
+      <div class="hero">
+        <div class="skel" style="height: 14px; width: 120px; margin-bottom: 16px;"></div>
+        <div class="skel" style="height: 60px; width: 100%;"></div>
+      </div>
+      <div class="card"><div class="skel" style="height: 80px;"></div></div>
+      <div class="card"><div class="skel" style="height: 120px;"></div></div>
+    `;
+    return;
+  }
+  let html = '';
+  if (currentRole === 'seller') html = renderSeller();
+  else if (currentRole === 'customer') html = renderCustomer();
+  else if (currentRole === 'partner') html = renderPartner();
+  screen.innerHTML = html;
+
+  $$('.nav-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.role === currentRole);
+  });
+}
+
+// ============================================================
+//   ACTIONS — optimistic UI + backend sync + AI integration
+// ============================================================
+async function approveAiMatch(returnId) {
+  const r = state.returns.find(x => x.id === returnId);
+  if (!r) return;
+
+  busyReturns.add(returnId);
+  render();
+
+  // 1. Call AI match function for partner recommendation + reasoning
+  const aiResult = await getAiMatch(r.product, state.partners);
+
+  // 2. Optimistic local mutation
+  r.status = 'awaiting_dropoff';
+  r.method = 'ai_match';
+  r.partnerId = aiResult.partner_id;
+  r.aiReasoning = aiResult.reasoning;
+  r.partnerCredit = aiResult.estimated_credit_back || r.partnerCredit;
+  r.events.push({ label: 'Local match approved', at: Date.now(), done: true });
+  r.events.push({ label: 'QR code sent to customer', at: Date.now(), done: true });
+  state.sellerStats.savedThisMonth = Math.round((state.sellerStats.savedThisMonth + (r.shipReturnCost - r.aiMatchCost)) * 100) / 100;
+
+  busyReturns.delete(returnId);
+  saveLocal();
+  render();
+
+  // 3. Sync to backend (best-effort)
+  if (CONFIG.API_BASE) {
+    try {
+      await api(`/api/returns/${returnId}/approve-ai`, {
+        method: 'POST',
+        body: JSON.stringify({
+          partnerId: aiResult.partner_id,
+          reasoning: aiResult.reasoning,
+          estimatedCredit: aiResult.estimated_credit_back
+        })
+      });
+      setConnection('online');
+    } catch (err) {
+      setConnection('offline');
+      toast('Saved locally — will sync when back online', { error: true });
+      return;
+    }
+  }
+
+  const partner = state.partners.find(p => p.id === aiResult.partner_id);
+  const savings = fmtMoney(r.shipReturnCost - r.aiMatchCost);
+  toast(`AI matched to ${partner ? partner.name.split(' ')[0] : 'partner'} · saved ${savings}`);
+}
+
+async function approveStandardShipping(returnId) {
+  const r = state.returns.find(x => x.id === returnId);
+  if (!r) return;
+  r.status = 'refunded';
+  r.method = 'ship';
+  r.events.push({ label: 'Standard return label sent', at: Date.now(), done: true });
+  saveLocal();
+  render();
+
+  if (CONFIG.API_BASE) {
+    try {
+      await api(`/api/returns/${returnId}/approve-ship`, { method: 'POST', body: '{}' });
+      setConnection('online');
+    } catch (err) {
+      setConnection('offline');
+    }
+  }
+  toast('Standard return label sent to customer');
+}
+
+async function selectPartner(returnId, partnerId) {
+  const r = state.returns.find(x => x.id === returnId);
+  if (!r) return;
+  r.partnerId = partnerId;
+  saveLocal();
+  const p = state.partners.find(x => x.id === partnerId);
+  toast(`Drop-off set: ${p.name}`);
+  render();
+
+  if (CONFIG.API_BASE) {
+    try {
+      await api(`/api/returns/${returnId}/partner`, {
+        method: 'POST',
+        body: JSON.stringify({ partnerId })
+      });
+      setConnection('online');
+    } catch (err) {
+      setConnection('offline');
+    }
+  }
+}
+
+async function processScan(code) {
+  if (!code) { toast('Enter a return code', { error: true }); return; }
+  const normalized = code.toUpperCase().trim().replace('RL-', 'RET-');
+  const r = state.returns.find(x => x.id === normalized);
+
+  if (!r) {
+    toast('Code not recognized · try RL-72A3F', { error: true });
+    return;
+  }
+  if (r.status !== 'awaiting_dropoff') {
+    toast('This return is not active for drop-off', { error: true });
+    return;
+  }
+
+  // Optimistic
+  r.status = 'dropped_off';
+  r.events.push({ label: 'Dropped off at partner', at: Date.now(), done: true });
+  const partner = state.partners.find(p => p.id === r.partnerId);
+  if (partner) partner.earningsWeek = Math.round((partner.earningsWeek + 0.50) * 100) / 100;
+  state.acceptedAtPartner.unshift({
+    code: r.id.replace('RET-', 'RL-'),
+    product: r.product.split(' · ')[0],
+    credit: r.partnerCredit,
+    at: Date.now()
+  });
+
+  saveLocal();
+  toast(`Accepted · ${r.id.replace('RET-', 'RL-')} · +${fmtMoney(0.50 + r.partnerCredit)}`);
+  render();
+
+  // Backend sync — handles auto-refund timing on its end too
+  if (CONFIG.API_BASE) {
+    try {
+      await api('/api/scan', { method: 'POST', body: JSON.stringify({ code }) });
+      setConnection('online');
+    } catch (err) {
+      setConnection('offline');
+    }
+  }
+
+  // Auto-refund 1.5s later (matches backend behavior)
+  setTimeout(() => {
+    const r2 = state.returns.find(x => x.id === normalized);
+    if (r2 && r2.status === 'dropped_off') {
+      r2.status = 'refunded';
+      r2.events.push({ label: 'Refund issued', at: Date.now(), done: true });
+      state.sellerStats.returnsThisMonth += 1;
+      saveLocal();
+      render();
+    }
+  }, 1500);
+}
+
+function viewPayouts() {
+  openModal(`
+    <div style="text-align:center; margin-bottom:18px;">
+      <div class="eyebrow">Payout history</div>
+      <div class="display" style="font-size:24px; margin-top:6px;">Last 60 days</div>
+    </div>
+    <div class="card">
+      <div class="compare-row" style="padding:10px 0;"><span>Apr 2026</span><span class="compare-value">$162.40</span></div>
+      <div class="compare-row" style="padding:10px 0; border-top:1px dashed var(--line-soft);"><span>Mar 2026</span><span class="compare-value">$94.80</span></div>
+      <div class="compare-row" style="padding:10px 0; border-top:1px dashed var(--line-soft);">
+        <span>Pending · settles Fri</span>
+        <span class="compare-value win">${fmtMoney(state.sellerStats.pendingPayout)}</span>
+      </div>
+    </div>
+    <button class="btn btn-cream modal-close" style="margin-top:14px;">Close</button>
+  `);
+}
+
+async function customerSkip(returnId) {
+  const r = state.returns.find(x => x.id === returnId);
+  if (!r) return;
+  r.status = 'refunded';
+  r.method = 'ship';
+  r.events.push({ label: 'Switched to standard return shipping', at: Date.now(), done: true });
+  saveLocal();
+  toast('Switched to standard shipping');
+  render();
+
+  if (CONFIG.API_BASE) {
+    try { await api(`/api/returns/${returnId}/skip`, { method: 'POST', body: '{}' }); }
+    catch (err) { setConnection('offline'); }
+  }
+}
+
+async function resetDemo() {
+  state = SEED();
+  saveLocal();
+  toast('Demo data reset');
+  render();
+  if (CONFIG.API_BASE) {
+    try { await api('/api/reset', { method: 'POST', body: '{}' }); }
+    catch (err) { setConnection('offline'); }
+  }
+}
+
+// ============================================================
+//   EVENT DELEGATION
+// ============================================================
+document.addEventListener('click', e => {
+  const navTab = e.target.closest('.nav-tab');
+  if (navTab) {
+    currentRole = navTab.dataset.role;
+    localStorage.setItem(ROLE_KEY, currentRole);
+    render();
+    return;
+  }
+
+  if (e.target.closest('#resetBtn')) { resetDemo(); return; }
+
+  const actionEl = e.target.closest('[data-action]');
+  if (!actionEl) return;
+  const action = actionEl.dataset.action;
+  const id = actionEl.dataset.id;
+
+  if (action === 'approve-ai') approveAiMatch(id);
+  else if (action === 'approve-ship') approveStandardShipping(id);
+  else if (action === 'select-partner') selectPartner(actionEl.dataset.return, id);
+  else if (action === 'process-scan') {
+    const input = $('#scanInput');
+    processScan(input ? input.value : '');
+    if (input) input.value = '';
+  }
+  else if (action === 'view-payouts') viewPayouts();
+  else if (action === 'customer-skip') customerSkip(id);
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'scanInput') {
+    processScan(document.activeElement.value);
+    document.activeElement.value = '';
+  }
+});
+
+// ============================================================
+//   INIT
+// ============================================================
+async function init() {
+  // Honor URL role param (from PWA shortcut deep links)
+  const params = new URLSearchParams(location.search);
+  const urlRole = params.get('role');
+  if (urlRole && ['seller', 'customer', 'partner'].includes(urlRole)) {
+    currentRole = urlRole;
+  } else {
+    currentRole = localStorage.getItem(ROLE_KEY) || 'seller';
+  }
+
+  render(); // show skeleton
+
+  await syncFromServer();
+  render();
+
+  // Optional polling
+  if (CONFIG.POLL_INTERVAL > 0 && CONFIG.API_BASE) {
+    setInterval(syncFromServer, CONFIG.POLL_INTERVAL);
+  }
+
+  // Online/offline detection
+  window.addEventListener('online', () => syncFromServer().then(render));
+  window.addEventListener('offline', () => setConnection('offline'));
+}
+
+// ============================================================
+//   SERVICE WORKER REGISTRATION
+// ============================================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => {
+        console.log('SW registered:', reg.scope);
+        // Check for updates every time the app gains focus
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) reg.update();
+        });
+      })
+      .catch(err => console.warn('SW registration failed:', err));
+  });
+}
+
+init();
+</script>
+</body>
+</html>
